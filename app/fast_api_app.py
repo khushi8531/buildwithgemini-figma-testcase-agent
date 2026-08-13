@@ -99,6 +99,7 @@ if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
+@app.get("/", response_class=HTMLResponse)
 @app.get("/portal", response_class=HTMLResponse)
 async def get_portal():
     """Serves the interactive Zephyr & Jira test case generator UI."""
