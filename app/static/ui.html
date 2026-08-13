@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zephyr & Jira Test Case Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --glow: rgba(99, 102, 241, 0.35);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 920px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--glow);
+    }
+
+    /* Image Upload Drag Drop Box */
+    .image-upload-box {
+      border: 2px dashed rgba(192, 132, 252, 0.4);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .image-upload-box:hover, .image-upload-box.dragover {
+      border-color: #c084fc;
+      background: rgba(192, 132, 252, 0.08);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-text {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .upload-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .image-preview-container {
+      display: none;
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .image-preview {
+      max-height: 180px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-remove-image {
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+
+    .auth-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .auth-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 25px var(--glow);
+      transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(168, 85, 247, 0.5);
+    }
+
+    .result-section {
+      margin-top: 32px;
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10deg); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-download {
+      background: #10b981;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-download:hover {
+      background: #059669;
+    }
+
+    .output-preview {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #38bdf8;
+    }
+
+    .loading-spinner {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-left-color: #c084fc;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>Zephyr & Jira Test Case Generator</h1>
+      <p>Connect Jira, Confluence, Figma REST APIs OR Upload a UI Mockup Screenshot to generate test cases.</p>
+    </div>
+
+    <form id="gen-form">
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="jiraKey">Jira Ticket Key (Optional)</label>
+          <input type="text" id="jiraKey" class="form-control" placeholder="e.g. PROJ-101">
+        </div>
+        <div class="form-group">
+          <label for="confluenceId">Confluence Page ID (Optional)</label>
+          <input type="text" id="confluenceId" class="form-control" placeholder="e.g. 987654321">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="figmaKey">Figma File Key (Optional)</label>
+          <input type="text" id="figmaKey" class="form-control" placeholder="e.g. aBc123XyZ456">
+        </div>
+        <div class="form-group">
+          <label for="figmaNodes">Figma Node IDs (Optional)</label>
+          <input type="text" id="figmaNodes" class="form-control" placeholder="e.g. 1:2, 3:4">
+        </div>
+      </div>
+
+      <!-- Image Upload Component -->
+      <div class="form-group">
+        <label>🖼️ Upload UI Mockup / Wireframe Image (Optional)</label>
+        <div class="image-upload-box" id="uploadBox">
+          <div class="upload-icon">📸</div>
+          <div class="upload-text">Click or Drag & Drop UI Mockup Image Here</div>
+          <div class="upload-hint">Supports PNG, JPG, WebP. If no Figma/Jira API keys are provided, agent generates test cases directly from this image!</div>
+          <input type="file" id="imageInput" accept="image/*" style="display: none;">
+          
+          <div class="image-preview-container" id="previewContainer">
+            <button type="button" class="btn-remove-image" id="removeImgBtn">&times;</button>
+            <img id="imgPreview" class="image-preview" src="" alt="UI Preview">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="format">Target Import Format</label>
+        <select id="format" class="form-control">
+          <option value="zephyr" selected>Zephyr (Scale / Squad) CSV</option>
+          <option value="xray">Jira Xray CSV</option>
+          <option value="testrail">TestRail CSV</option>
+        </select>
+      </div>
+
+      <div class="auth-box">
+        <div class="auth-title">🔐 Authentication & REST API Tokens (Optional)</div>
+        <div class="grid-2">
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="figmaToken">Figma Access Token</label>
+            <input type="password" id="figmaToken" class="form-control" placeholder="figd_...">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="atlassianToken">Atlassian API Token</label>
+            <input type="password" id="atlassianToken" class="form-control" placeholder="ATATT3xF...">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">🚀 Analyze Inputs & Generate Test Cases</button>
+    </form>
+
+    <div class="loading-spinner" id="spinner">
+      <div class="spinner"></div>
+      <p style="color: #c084fc; font-weight: 500;">Analyzing image mockup & API requirements to construct test cases...</p>
+    </div>
+
+    <div class="result-section" id="resultSection">
+      <div class="result-header">
+        <h3>Generated Test Cases CSV</h3>
+        <button class="btn-download" id="downloadBtn">📥 Download CSV</button>
+      </div>
+      <div class="output-preview" id="outputPreview"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('gen-form');
+    const spinner = document.getElementById('spinner');
+    const resultSection = document.getElementById('resultSection');
+    const outputPreview = document.getElementById('outputPreview');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    const uploadBox = document.getElementById('uploadBox');
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imgPreview = document.getElementById('imgPreview');
+    const removeImgBtn = document.getElementById('removeImgBtn');
+
+    let base64ImageData = '';
+    let generatedCSV = '';
+
+    // Handle Upload Click & Drag-and-Drop
+    uploadBox.addEventListener('click', (e) => {
+      if (e.target !== removeImgBtn) {
+        imageInput.click();
+      }
+    });
+
+    uploadBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBox.classList.add('dragover');
+    });
+
+    uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
+
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleImageFile(e.target.files[0]);
+      }
+    });
+
+    function handleImageFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        base64ImageData = evt.target.result;
+        imgPreview.src = base64ImageData;
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeImgBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      base64ImageData = '';
+      imageInput.value = '';
+      imgPreview.src = '';
+      previewContainer.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      spinner.style.display = 'block';
+      resultSection.style.display = 'none';
+
+      const jiraKey = document.getElementById('jiraKey').value.trim();
+      const confluenceId = document.getElementById('confluenceId').value.trim();
+      const figmaKey = document.getElementById('figmaKey').value.trim();
+      const figmaNodes = document.getElementById('figmaNodes').value.trim();
+      const format = document.getElementById('format').value;
+
+      try {
+        const response = await fetch('/generate-testcases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jira_key: jiraKey,
+            confluence_id: confluenceId,
+            figma_key: figmaKey,
+            figma_nodes: figmaNodes,
+            format: format,
+            image_data: base64ImageData
+          })
+        });
+
+        const data = await response.json();
+        spinner.style.display = 'none';
+        resultSection.style.display = 'block';
+
+        generatedCSV = data.csv || data.result || 'No CSV generated.';
+        outputPreview.textContent = generatedCSV;
+      } catch (err) {
+        spinner.style.display = 'none';
+        alert('Error generating test cases: ' + err.message);
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const blob = new Blob([generatedCSV], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'test_cases.csv');
+      a.click();
+    });
+  </script>
+</body>
+</html>

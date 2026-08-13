@@ -1,0 +1,18 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "generate_login_testcases",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Generate Jira Xray formatted test cases for a login page where Username must be a valid email address and Password must be at least 8 characters."}]
+      }
+    },
+    {
+      "eval_case_id": "generate_checkout_testcases",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Generate TestRail formatted test cases for a checkout page with Credit Card Number and Expiration Date inputs."}]
+      }
+    }
+  ]
+}

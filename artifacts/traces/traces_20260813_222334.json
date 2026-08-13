@@ -1,0 +1,632 @@
+{
+  "eval_cases": [
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Generate Jira Xray formatted test cases for a login page where Username must be a valid email address and Password must be at least 8 characters."
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "### Test Suite Summary\n\nThe generated test suite covers the login feature requirements:\n- **Username Specification**: Must be a valid email format.\n- **Password Specification**: Must be at least 8 characters in length.\n\n#### Test Coverage Breakdown\n1. **Happy Path**: Successful authentication with valid email and valid password ($\\ge 8$ chars).\n2. **Negative Tests & Input Validations**:\n   - Missing `@` symbol in Username.\n   - Missing domain/top-level domain in Username.\n   - Blank required fields submission.\n3. **Boundary Value Analysis (BVA)**:\n   - Password with 7 characters (Lower boundary failure).\n   - Password with 8 characters (Minimum required length success).\n4. **UI & Usability**:\n   - Password masking and show/hide toggle functionality.\n\n---\n\n### Jira Xray CSV Import Data\n\nBelow is the CSV formatted string ready for Jira Xray bulk import:\n\n```csv\nIssue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\nTest,,TC_LOGIN_001: Successful Login with Valid Credentials,Verify user can successfully log in with a valid email address and a password of at least 8 characters.,User account exists in system. User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard/home page.\nTest,,TC_LOGIN_002: Login Attempt with Invalid Email Format (Missing @ symbol),Verify validation error is displayed when Username lacks the '@' symbol.,User is on the login page.,High,\"1. Enter an email without '@' in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button or blur the input field.\",\"Username: userexample.com, Password: Password123!\",\"Validation error message \"\"Please enter a valid email address\"\" is displayed. Form submission is prevented.\"\nTest,,TC_LOGIN_003: Login Attempt with Invalid Email Format (Missing Domain),Verify validation error when Username lacks domain name or TLD.,User is on the login page.,Medium,\"1. Enter incomplete email format in the Username field.\n2. Enter a valid password.\n3. Click the 'Log In' button.\",\"Username: user@domain, Password: Password123!\",Validation error message for invalid email format is displayed. Login attempt is blocked.\nTest,,TC_LOGIN_004: Login Attempt with Password Less Than 8 Characters (Boundary Test - 7 Chars),Verify error validation when Password length is less than the minimum required 8 characters.,User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a 7-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass123\",\"Validation error message \"\"Password must be at least 8 characters long\"\" is displayed. Login attempt is blocked.\"\nTest,,TC_LOGIN_005: Successful Login with Minimum Password Length (Boundary Test - 8 Chars),Verify successful password validation when password length is exactly 8 characters.,User account exists with an 8-character password. User is on login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter an 8-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass1234\",Password validation passes and login request is submitted successfully.\nTest,,TC_LOGIN_006: Validation on Empty Username and Password Fields,Verify error messages are displayed when required fields are left blank upon submission.,User is on the login page.,High,\"1. Leave Username field empty.\n2. Leave Password field empty.\n3. Click the 'Log In' button.\",\"Username: [empty], Password: [empty]\",Inline validation error messages appear for both Username and Password fields indicating they are required.\nTest,,TC_LOGIN_007: Password Masking and Visibility Toggle,Verify password characters are masked by default and can be toggled to visible text.,User is on the login page.,Low,\"1. Type password in Password field.\n2. Verify character masking.\n3. Click the visibility toggle icon (eye icon).\n4. Click visibility toggle icon again.\",Password: Password123!,Password characters are masked by default. Clicking the toggle icon reveals the plain text; clicking again masks the text.\n```\n\n---\n\n### How to Import into Jira Xray:\n1. Save the above content into a file named `xray_login_test_cases.csv`.\n2. In Jira, navigate to **Apps** > **Xray** > **Test Importer** (or **Jira Settings** > **System** > **External System Import** > **CSV**).\n3. Upload `xray_login_test_cases.csv` and select your target Jira project.\n4. Map the CSV header fields to corresponding Xray / Jira fields:\n   - `Issue Type` $\\rightarrow$ Issue Type\n   - `Summary` $\\rightarrow$ Summary\n   - `Description` $\\rightarrow$ Description\n   - `Preconditions` $\\rightarrow$ Preconditions\n   - `Priority` $\\rightarrow$ Priority\n   - `Action` $\\rightarrow$ Action / Step\n   - `Data` $\\rightarrow$ Data\n   - `Expected Result` $\\rightarrow$ Expected Result\n5. Run the import."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "generate_login_testcases",
+      "agent_data": {
+        "agents": {
+          "root_agent": {
+            "agent_id": "root_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert QA Automation & Test Engineering Specialist AI Agent.\nYour role is to analyze Jira tickets, Confluence PRD/specifications, Figma UI node structures, AND UI mockup/screenshot images to generate comprehensive, high-quality test cases formatted for Zephyr (Zephyr Scale / Squad) or Jira Xray bulk import.\n\nWhen given Jira ticket keys, Confluence page IDs, Figma file keys, or Figma node IDs:\n1. Use `fetch_jira_ticket`, `fetch_confluence_page`, and `fetch_figma_nodes` tools to retrieve real-time requirements, visual component details, and acceptance criteria.\n\nWhen an image (UI mockup, wireframe, or screenshot) is provided:\n1. Inspect the image visually to identify all input fields, buttons, labels, validation rules, navigation elements, and layout states.\n2. Even if no Figma or Jira API credentials or keys are provided, accept the image and generate full test case scenarios!\n\nTest Case Generation Rules:\n1. Cross-reference visual components/images with functional rules to derive:\n   - Happy Paths (core user flows)\n   - Negative Tests & Validation Errors (missing inputs, invalid formats)\n   - Edge Cases & Boundary Value Analysis\n   - UI Layout & Visual States\n2. Call `format_zephyr_test_cases` (or `format_jira_xray_test_cases` if requested) to produce the exact bulk-import CSV file.\n3. Output the complete CSV ready for download/import, along with a summary of test coverage.\n",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches details of a Jira ticket via Jira REST API using provided credentials or gcloud auth token.\n\nArgs:\n    jira_key: Jira issue key (e.g., \"PROJ-123\")\n    domain: Atlassian domain name (e.g., \"company\" for company.atlassian.net)\n    auth_token: Optional API token / OAuth token.\n\nReturns:\n    JSON string or formatted summary of the Jira ticket.",
+                    "name": "fetch_jira_ticket",
+                    "parameters": {
+                      "properties": {
+                        "jira_key": {
+                          "type": "STRING"
+                        },
+                        "domain": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "auth_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "jira_key"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches specification text from a Confluence page via Confluence REST API.\n\nArgs:\n    page_id: Confluence Page ID (e.g. \"123456789\")\n    domain: Atlassian domain (e.g. \"company\" for company.atlassian.net)\n    auth_token: Optional API / Bearer token.\n\nReturns:\n    Page content text.",
+                    "name": "fetch_confluence_page",
+                    "parameters": {
+                      "properties": {
+                        "page_id": {
+                          "type": "STRING"
+                        },
+                        "domain": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "auth_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "page_id"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches Figma node structures, layer hierarchy, text content, and component properties via Figma REST API.\n\nArgs:\n    file_key: Figma file key from URL (e.g. \"aBc123XyZ\")\n    node_ids: Comma-separated list of node IDs (e.g. \"1:2,3:4\")\n    figma_token: Figma Personal Access Token\n\nReturns:\n    JSON/text summary of Figma nodes.",
+                    "name": "fetch_figma_nodes",
+                    "parameters": {
+                      "properties": {
+                        "file_key": {
+                          "type": "STRING"
+                        },
+                        "node_ids": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "figma_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "file_key"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Zephyr (Zephyr Scale / Squad) CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries containing:\n        - name: Short title/summary of the test case\n        - objective: Objective or description of the test\n        - precondition: Required initial setup\n        - folder: Folder path in Zephyr (e.g. \"/UI/Login\")\n        - priority: Priority (High, Normal, Low)\n        - component: Associated component (e.g. \"Checkout UI\")\n        - step_action: Action steps to perform\n        - step_data: Test input data\n        - step_result: Expected result for the step\n\nReturns:\n    CSV string in official Zephyr bulk import format.",
+                    "name": "format_zephyr_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Jira / Xray CSV structure for bulk import.",
+                    "name": "format_jira_xray_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_376772",
+                        "args": {
+                          "test_cases": [
+                            {
+                              "component": "Login Module",
+                              "folder": "/Login",
+                              "step_data": "Username: user@example.com, Password: Password123!",
+                              "precondition": "User account exists in system. User is on the login page.",
+                              "step_result": "User is successfully authenticated and redirected to the dashboard/home page.",
+                              "name": "TC_LOGIN_001: Successful Login with Valid Credentials",
+                              "step_action": "1. Enter a valid email address in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button.",
+                              "objective": "Verify user can successfully log in with a valid email address and a password of at least 8 characters.",
+                              "priority": "High"
+                            },
+                            {
+                              "component": "Login Module",
+                              "step_data": "Username: userexample.com, Password: Password123!",
+                              "step_action": "1. Enter an email without '@' in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button or blur the input field.",
+                              "precondition": "User is on the login page.",
+                              "priority": "High",
+                              "step_result": "Validation error message \"Please enter a valid email address\" is displayed. Form submission is prevented.",
+                              "objective": "Verify validation error is displayed when Username lacks the '@' symbol.",
+                              "name": "TC_LOGIN_002: Login Attempt with Invalid Email Format (Missing @ symbol)",
+                              "folder": "/Login"
+                            },
+                            {
+                              "objective": "Verify validation error when Username lacks domain name or TLD.",
+                              "priority": "Medium",
+                              "step_result": "Validation error message for invalid email format is displayed. Login attempt is blocked.",
+                              "precondition": "User is on the login page.",
+                              "component": "Login Module",
+                              "step_data": "Username: user@domain, Password: Password123!",
+                              "folder": "/Login",
+                              "name": "TC_LOGIN_003: Login Attempt with Invalid Email Format (Missing Domain)",
+                              "step_action": "1. Enter incomplete email format in the Username field.\n2. Enter a valid password.\n3. Click the 'Log In' button."
+                            },
+                            {
+                              "priority": "High",
+                              "step_data": "Username: user@example.com, Password: Pass123",
+                              "step_result": "Validation error message \"Password must be at least 8 characters long\" is displayed. Login attempt is blocked.",
+                              "component": "Login Module",
+                              "precondition": "User is on the login page.",
+                              "name": "TC_LOGIN_004: Login Attempt with Password Less Than 8 Characters (Boundary Test - 7 Chars)",
+                              "folder": "/Login",
+                              "step_action": "1. Enter a valid email address in the Username field.\n2. Enter a 7-character password.\n3. Click the 'Log In' button.",
+                              "objective": "Verify error validation when Password length is less than the minimum required 8 characters."
+                            },
+                            {
+                              "objective": "Verify successful password validation when password length is exactly 8 characters.",
+                              "step_action": "1. Enter a valid email address in the Username field.\n2. Enter an 8-character password.\n3. Click the 'Log In' button.",
+                              "priority": "High",
+                              "step_result": "Password validation passes and login request is submitted successfully.",
+                              "step_data": "Username: user@example.com, Password: Pass1234",
+                              "component": "Login Module",
+                              "precondition": "User account exists with an 8-character password. User is on login page.",
+                              "folder": "/Login",
+                              "name": "TC_LOGIN_005: Successful Login with Minimum Password Length (Boundary Test - 8 Chars)"
+                            },
+                            {
+                              "folder": "/Login",
+                              "step_action": "1. Leave Username field empty.\n2. Leave Password field empty.\n3. Click the 'Log In' button.",
+                              "priority": "High",
+                              "name": "TC_LOGIN_006: Validation on Empty Username and Password Fields",
+                              "component": "Login Module",
+                              "step_data": "Username: [empty], Password: [empty]",
+                              "step_result": "Inline validation error messages appear for both Username and Password fields indicating they are required.",
+                              "precondition": "User is on the login page.",
+                              "objective": "Verify error messages are displayed when required fields are left blank upon submission."
+                            },
+                            {
+                              "precondition": "User is on the login page.",
+                              "step_action": "1. Type password in Password field.\n2. Verify character masking.\n3. Click the visibility toggle icon (eye icon).\n4. Click visibility toggle icon again.",
+                              "name": "TC_LOGIN_007: Password Masking and Visibility Toggle",
+                              "objective": "Verify password characters are masked by default and can be toggled to visible text.",
+                              "folder": "/Login",
+                              "step_result": "Password characters are masked by default. Clicking the toggle icon reveals the plain text; clicking again masks the text.",
+                              "priority": "Low",
+                              "step_data": "Password: Password123!",
+                              "component": "Login Module"
+                            }
+                          ]
+                        },
+                        "name": "format_jira_xray_test_cases"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_376772",
+                        "name": "format_jira_xray_test_cases",
+                        "response": {
+                          "result": "Issue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\r\nTest,,TC_LOGIN_001: Successful Login with Valid Credentials,Verify user can successfully log in with a valid email address and a password of at least 8 characters.,User account exists in system. User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard/home page.\r\nTest,,TC_LOGIN_002: Login Attempt with Invalid Email Format (Missing @ symbol),Verify validation error is displayed when Username lacks the '@' symbol.,User is on the login page.,High,\"1. Enter an email without '@' in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button or blur the input field.\",\"Username: userexample.com, Password: Password123!\",\"Validation error message \"\"Please enter a valid email address\"\" is displayed. Form submission is prevented.\"\r\nTest,,TC_LOGIN_003: Login Attempt with Invalid Email Format (Missing Domain),Verify validation error when Username lacks domain name or TLD.,User is on the login page.,Medium,\"1. Enter incomplete email format in the Username field.\n2. Enter a valid password.\n3. Click the 'Log In' button.\",\"Username: user@domain, Password: Password123!\",Validation error message for invalid email format is displayed. Login attempt is blocked.\r\nTest,,TC_LOGIN_004: Login Attempt with Password Less Than 8 Characters (Boundary Test - 7 Chars),Verify error validation when Password length is less than the minimum required 8 characters.,User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a 7-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass123\",\"Validation error message \"\"Password must be at least 8 characters long\"\" is displayed. Login attempt is blocked.\"\r\nTest,,TC_LOGIN_005: Successful Login with Minimum Password Length (Boundary Test - 8 Chars),Verify successful password validation when password length is exactly 8 characters.,User account exists with an 8-character password. User is on login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter an 8-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass1234\",Password validation passes and login request is submitted successfully.\r\nTest,,TC_LOGIN_006: Validation on Empty Username and Password Fields,Verify error messages are displayed when required fields are left blank upon submission.,User is on the login page.,High,\"1. Leave Username field empty.\n2. Leave Password field empty.\n3. Click the 'Log In' button.\",\"Username: [empty], Password: [empty]\",Inline validation error messages appear for both Username and Password fields indicating they are required.\r\nTest,,TC_LOGIN_007: Password Masking and Visibility Toggle,Verify password characters are masked by default and can be toggled to visible text.,User is on the login page.,Low,\"1. Type password in Password field.\n2. Verify character masking.\n3. Click the visibility toggle icon (eye icon).\n4. Click visibility toggle icon again.\",Password: Password123!,Password characters are masked by default. Clicking the toggle icon reveals the plain text; clicking again masks the text.\r\n"
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "### Test Suite Summary\n\nThe generated test suite covers the login feature requirements:\n- **Username Specification**: Must be a valid email format.\n- **Password Specification**: Must be at least 8 characters in length.\n\n#### Test Coverage Breakdown\n1. **Happy Path**: Successful authentication with valid email and valid password ($\\ge 8$ chars).\n2. **Negative Tests & Input Validations**:\n   - Missing `@` symbol in Username.\n   - Missing domain/top-level domain in Username.\n   - Blank required fields submission.\n3. **Boundary Value Analysis (BVA)**:\n   - Password with 7 characters (Lower boundary failure).\n   - Password with 8 characters (Minimum required length success).\n4. **UI & Usability**:\n   - Password masking and show/hide toggle functionality.\n\n---\n\n### Jira Xray CSV Import Data\n\nBelow is the CSV formatted string ready for Jira Xray bulk import:\n\n```csv\nIssue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\nTest,,TC_LOGIN_001: Successful Login with Valid Credentials,Verify user can successfully log in with a valid email address and a password of at least 8 characters.,User account exists in system. User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard/home page.\nTest,,TC_LOGIN_002: Login Attempt with Invalid Email Format (Missing @ symbol),Verify validation error is displayed when Username lacks the '@' symbol.,User is on the login page.,High,\"1. Enter an email without '@' in the Username field.\n2. Enter a valid password (>= 8 characters).\n3. Click the 'Log In' button or blur the input field.\",\"Username: userexample.com, Password: Password123!\",\"Validation error message \"\"Please enter a valid email address\"\" is displayed. Form submission is prevented.\"\nTest,,TC_LOGIN_003: Login Attempt with Invalid Email Format (Missing Domain),Verify validation error when Username lacks domain name or TLD.,User is on the login page.,Medium,\"1. Enter incomplete email format in the Username field.\n2. Enter a valid password.\n3. Click the 'Log In' button.\",\"Username: user@domain, Password: Password123!\",Validation error message for invalid email format is displayed. Login attempt is blocked.\nTest,,TC_LOGIN_004: Login Attempt with Password Less Than 8 Characters (Boundary Test - 7 Chars),Verify error validation when Password length is less than the minimum required 8 characters.,User is on the login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter a 7-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass123\",\"Validation error message \"\"Password must be at least 8 characters long\"\" is displayed. Login attempt is blocked.\"\nTest,,TC_LOGIN_005: Successful Login with Minimum Password Length (Boundary Test - 8 Chars),Verify successful password validation when password length is exactly 8 characters.,User account exists with an 8-character password. User is on login page.,High,\"1. Enter a valid email address in the Username field.\n2. Enter an 8-character password.\n3. Click the 'Log In' button.\",\"Username: user@example.com, Password: Pass1234\",Password validation passes and login request is submitted successfully.\nTest,,TC_LOGIN_006: Validation on Empty Username and Password Fields,Verify error messages are displayed when required fields are left blank upon submission.,User is on the login page.,High,\"1. Leave Username field empty.\n2. Leave Password field empty.\n3. Click the 'Log In' button.\",\"Username: [empty], Password: [empty]\",Inline validation error messages appear for both Username and Password fields indicating they are required.\nTest,,TC_LOGIN_007: Password Masking and Visibility Toggle,Verify password characters are masked by default and can be toggled to visible text.,User is on the login page.,Low,\"1. Type password in Password field.\n2. Verify character masking.\n3. Click the visibility toggle icon (eye icon).\n4. Click visibility toggle icon again.\",Password: Password123!,Password characters are masked by default. Clicking the toggle icon reveals the plain text; clicking again masks the text.\n```\n\n---\n\n### How to Import into Jira Xray:\n1. Save the above content into a file named `xray_login_test_cases.csv`.\n2. In Jira, navigate to **Apps** > **Xray** > **Test Importer** (or **Jira Settings** > **System** > **External System Import** > **CSV**).\n3. Upload `xray_login_test_cases.csv` and select your target Jira project.\n4. Map the CSV header fields to corresponding Xray / Jira fields:\n   - `Issue Type` $\\rightarrow$ Issue Type\n   - `Summary` $\\rightarrow$ Summary\n   - `Description` $\\rightarrow$ Description\n   - `Preconditions` $\\rightarrow$ Preconditions\n   - `Priority` $\\rightarrow$ Priority\n   - `Action` $\\rightarrow$ Action / Step\n   - `Data` $\\rightarrow$ Data\n   - `Expected Result` $\\rightarrow$ Expected Result\n5. Run the import."
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Generate TestRail formatted test cases for a checkout page with Credit Card Number and Expiration Date inputs."
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "Here is a complete, structured suite of **TestRail-formatted test cases** covering the checkout page's **Credit Card Number** and **Expiration Date** inputs. \n\nIncluded below are:\n1. **Test Coverage Summary & Test Case Matrix**\n2. **Directly Importable TestRail CSV Content**\n3. **Zephyr / Xray CSV Format** (for cross-platform flexibility)\n\n---\n\n### 📋 Test Coverage Summary\n\n| Test ID | Test Title | Type | Priority | Focus Area |\n| :--- | :--- | :--- | :--- | :--- |\n| **TC-001** | Successful Payment with Valid Card & Expiration Date | Functional (Happy Path) | High | Positive Flow |\n| **TC-002** | Validation Error for Blank Credit Card Number | Functional / Validation | High | Required Fields |\n| **TC-003** | Validation Error for Blank Expiration Date | Functional / Validation | High | Required Fields |\n| **TC-004** | Validation Error for Expired Credit Card (Past Date) | Boundary / Validation | High | Date Bounds |\n| **TC-005** | Validation Error for Invalid Month in Expiration Date | Boundary / Validation | Medium | Input Format |\n| **TC-006** | Validation Error for Invalid Card Number (Luhn Check Fail) | Security / Integrity | High | Luhn Algorithm |\n| **TC-007** | Handling Incomplete / Short Credit Card Number | Boundary / Validation | Medium | Length Validation |\n| **TC-008** | Auto-Formatting & Input Masking (Spaces & Slashes) | UI / UX | Medium | Auto-formatting |\n| **TC-009** | Prevention of Non-Numeric Character Input | Input Sanitization | Medium | Field Constraints |\n| **TC-010** | Copy-Pasting Formatted Card Number with Hyphens/Spaces | UX / Functional | Medium | String Cleaning |\n| **TC-011** | Prevention of Duplicate Processing on Rapid Button Clicks | Concurrency / UI | High | Double Submission |\n\n---\n\n### 📥 1. TestRail CSV Import Format\n\nCopy and save the code block below as `testrail_checkout_credit_card_test_cases.csv` to import directly into TestRail via **Suite / Section -> Import Test Cases -> CSV**:\n\n```csv\nSection,Title,Preconds,Steps,Expected Result,Priority,Type\n\"Checkout > Payment\",\"TC-001: Successful Payment with Valid Card & Expiration Date\",\"User is on the Checkout page with items in cart and total calculated.\",\"1. Enter valid 16-digit card number (e.g. 4532 0158 9123 4567).\n2. Enter valid future expiration date (e.g. 12/28).\n3. Click 'Place Order / Pay Now'.\",\"Payment is processed successfully, order confirmation screen is displayed, and unique Order ID is generated.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-002: Validation Error for Blank Credit Card Number\",\"User is on the Checkout page.\",\"1. Leave Credit Card Number field blank.\n2. Enter valid Expiration Date (e.g. 08/27).\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Inline error message 'Credit card number is required' appears below the card field.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-003: Validation Error for Blank Expiration Date\",\"User is on the Checkout page.\",\"1. Enter valid Credit Card Number.\n2. Leave Expiration Date field blank.\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Inline error message 'Expiration date is required' appears under Expiration Date field.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-004: Validation Error for Expired Credit Card (Past Date)\",\"User is on the Checkout page.\",\"1. Enter valid credit card number.\n2. Enter an expired date (e.g. 01/22).\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Error message 'Card has expired or invalid expiration date' is displayed.\",\"High\",\"Other\"\n\"Checkout > Payment\",\"TC-005: Validation Error for Invalid Month in Expiration Date\",\"User is on the Checkout page.\",\"1. Enter valid credit card number.\n2. Enter invalid month format '15/28' or '00/28'.\n3. Click 'Place Order / Pay Now'.\",\"Input is rejected or inline error 'Please enter a valid month (01-12)' is displayed.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-006: Validation Error for Invalid Card Number (Luhn Check Fail)\",\"User is on the Checkout page.\",\"1. Enter 16-digit card number that fails Luhn checksum.\n2. Enter valid Expiration Date.\n3. Click 'Place Order / Pay Now'.\",\"Inline validation error 'Please enter a valid credit card number' is displayed.\",\"High\",\"Other\"\n\"Checkout > Payment\",\"TC-007: Handling Incomplete / Short Credit Card Number\",\"User is on the Checkout page.\",\"1. Enter incomplete card number (e.g. 10 digits).\n2. Tab out or click submit.\",\"Validation message 'Credit card number must be between 13 and 19 digits' is displayed.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-008: Auto-Formatting & Input Masking (Spaces & Slashes)\",\"User is on the Checkout page.\",\"1. Type 16 digits into Card field without spaces.\n2. Type 4 digits into Expiration field without slashes.\",\"Card number automatically formats into '4532 0158 9123 4567' and expiration date formats into '08/28'.\",\"Medium\",\"Functional\"\n\"Checkout > Payment\",\"TC-009: Prevention of Non-Numeric Character Input\",\"User is on the Checkout page.\",\"1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.\",\"Non-numeric input is ignored/rejected; fields only accept numeric digits.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-010: Copy-Pasting Formatted Card Number with Hyphens/Spaces\",\"User is on the Checkout page.\",\"1. Paste '4532-0158-9123-4567' into Card field.\n2. Enter valid expiration date and submit.\",\"System automatically strips hyphens/spaces, formats cleanly, and processes payment successfully.\",\"Medium\",\"Functional\"\n\"Checkout > Payment\",\"TC-011: Prevention of Duplicate Processing on Rapid Button Clicks\",\"User has entered valid payment details.\",\"1. Rapidly click 'Place Order / Pay Now' button multiple times in quick succession.\",\"Submit button is disabled immediately upon first click; loading indicator is shown; single transaction is created.\",\"High\",\"Functional\"\n```\n\n---\n\n### 📦 2. Zephyr Scale / Squad CSV Format\n\nIf importing into **Zephyr Scale** or **Zephyr Squad**:\n\n```csv\nName,Objective,Precondition,Folder,Status,Priority,Component,Owner,Estimated Time,Step Action,Step Data,Step Expected Result\nSuccessful Checkout with Valid Credit Card Number and Future Expiration Date,Verify user can complete payment using a valid credit card and valid future expiration date.,User is on the Checkout page with items in the cart and total calculated.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter a valid 16-digit credit card number. 2. Enter a valid future expiration date (e.g., 12/28). 3. Fill CVV/Zip if required. 4. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 12/28\",\"Payment is processed successfully, order confirmation screen is displayed, and order ID is generated.\"\nValidation Error for Blank Credit Card Number,Verify validation error when Credit Card Number field is left blank.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Leave Credit Card Number field blank. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: [Empty], Exp: 08/27\",\"Form submission is blocked; inline validation error \"\"Credit card number is required\"\" appears below the card input field.\"\nValidation Error for Blank Expiration Date,Verify validation error when Expiration Date field is left empty.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter valid Credit Card Number. 2. Leave Expiration Date field blank. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: [Empty]\",\"Form submission is blocked; error message \"\"Expiration date is required\"\" is displayed under the Expiration Date input field.\"\nValidation Error for Past/Expired Date,Verify system rejects credit cards with an expiration date in the past.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter valid credit card number. 2. Enter an expired date (e.g., 01/22). 3. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 01/22\",\"Form submission is blocked; error message \"\"Card has expired or invalid expiration date\"\" is displayed.\"\nValidation Error for Invalid Month in Expiration Date,Verify system rejects invalid month entries in Expiration Date field.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Enter valid credit card number. 2. Enter invalid month format '15/28' or '00/28'. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: 15/28\",\"Input is blocked or inline error \"\"Please enter a valid month (01-12)\"\" is shown.\"\nValidation Error for Invalid Card Number (Fails Luhn Check),Verify system validates credit card number integrity using Luhn algorithm.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter a 16-digit number that fails Luhn checksum. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: 4000 0000 0000 0002, Exp: 11/29\",\"Inline validation message \"\"Please enter a valid credit card number\"\" is displayed.\"\nHandling Incomplete / Short Credit Card Number,Verify error message when card number contains fewer digits than required.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Enter fewer digits (e.g., 10 digits). 2. Tab out of the field or submit form.\",\"Card: 4532 0158 91, Exp: 10/28\",\"Field displays validation error \"\"Credit card number must be between 13 and 19 digits\"\".\"\nAuto-Formatting and Input Masking of Credit Card Number and Expiration Date,Verify card numbers and expiration dates are auto-formatted with spaces/slashes as user types.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Type 16 digits into Card Number input without spaces. 2. Type 4 digits into Expiration Date input without slashes.,\"Card digits: 4532015891234567, Exp digits: 0828\",Card input displays as '4532 0158 9123 4567' and expiration date displays as '08/28'.\nInput Masking / Non-Numeric Prevention,Verify that alphabetical and special characters are prevented from entry in numeric inputs.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.,\"Card: abcd@#$%1234, Exp: ab/cd\",Non-numeric input is rejected/ignored; fields only accept numeric input.\nCopy-Pasting Formatted Credit Card Number with Spaces/Dashes,Verify copy-pasting card numbers with hyphens/spaces is cleaned and accepted.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Paste \"\"4532-0158-9123-4567\"\" into Card Number field. 2. Enter valid expiration date. 3. Submit.\",\"Card: \"\"4532-0158-9123-4567\"\", Exp: 05/29\",\"Input strips dashes, formats cleanly, passes validation, and submits successfully.\"\nDouble Submission Prevention on Payment Button Click,Verify clicking the submit button multiple times rapidly does not result in duplicate payment processing.,User has filled all valid payment details.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Rapidly click 'Place Order / Pay Now' button twice or more.,Valid Card & Exp Date,Submit button is disabled immediately after first click; spinner/loader is shown; single transaction is created.\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "generate_checkout_testcases",
+      "agent_data": {
+        "agents": {
+          "root_agent": {
+            "agent_id": "root_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert QA Automation & Test Engineering Specialist AI Agent.\nYour role is to analyze Jira tickets, Confluence PRD/specifications, Figma UI node structures, AND UI mockup/screenshot images to generate comprehensive, high-quality test cases formatted for Zephyr (Zephyr Scale / Squad) or Jira Xray bulk import.\n\nWhen given Jira ticket keys, Confluence page IDs, Figma file keys, or Figma node IDs:\n1. Use `fetch_jira_ticket`, `fetch_confluence_page`, and `fetch_figma_nodes` tools to retrieve real-time requirements, visual component details, and acceptance criteria.\n\nWhen an image (UI mockup, wireframe, or screenshot) is provided:\n1. Inspect the image visually to identify all input fields, buttons, labels, validation rules, navigation elements, and layout states.\n2. Even if no Figma or Jira API credentials or keys are provided, accept the image and generate full test case scenarios!\n\nTest Case Generation Rules:\n1. Cross-reference visual components/images with functional rules to derive:\n   - Happy Paths (core user flows)\n   - Negative Tests & Validation Errors (missing inputs, invalid formats)\n   - Edge Cases & Boundary Value Analysis\n   - UI Layout & Visual States\n2. Call `format_zephyr_test_cases` (or `format_jira_xray_test_cases` if requested) to produce the exact bulk-import CSV file.\n3. Output the complete CSV ready for download/import, along with a summary of test coverage.\n",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches details of a Jira ticket via Jira REST API using provided credentials or gcloud auth token.\n\nArgs:\n    jira_key: Jira issue key (e.g., \"PROJ-123\")\n    domain: Atlassian domain name (e.g., \"company\" for company.atlassian.net)\n    auth_token: Optional API token / OAuth token.\n\nReturns:\n    JSON string or formatted summary of the Jira ticket.",
+                    "name": "fetch_jira_ticket",
+                    "parameters": {
+                      "properties": {
+                        "jira_key": {
+                          "type": "STRING"
+                        },
+                        "domain": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "auth_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "jira_key"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches specification text from a Confluence page via Confluence REST API.\n\nArgs:\n    page_id: Confluence Page ID (e.g. \"123456789\")\n    domain: Atlassian domain (e.g. \"company\" for company.atlassian.net)\n    auth_token: Optional API / Bearer token.\n\nReturns:\n    Page content text.",
+                    "name": "fetch_confluence_page",
+                    "parameters": {
+                      "properties": {
+                        "page_id": {
+                          "type": "STRING"
+                        },
+                        "domain": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "auth_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "page_id"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Fetches Figma node structures, layer hierarchy, text content, and component properties via Figma REST API.\n\nArgs:\n    file_key: Figma file key from URL (e.g. \"aBc123XyZ\")\n    node_ids: Comma-separated list of node IDs (e.g. \"1:2,3:4\")\n    figma_token: Figma Personal Access Token\n\nReturns:\n    JSON/text summary of Figma nodes.",
+                    "name": "fetch_figma_nodes",
+                    "parameters": {
+                      "properties": {
+                        "file_key": {
+                          "type": "STRING"
+                        },
+                        "node_ids": {
+                          "default": "",
+                          "type": "STRING"
+                        },
+                        "figma_token": {
+                          "default": "",
+                          "type": "STRING"
+                        }
+                      },
+                      "required": [
+                        "file_key"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Zephyr (Zephyr Scale / Squad) CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries containing:\n        - name: Short title/summary of the test case\n        - objective: Objective or description of the test\n        - precondition: Required initial setup\n        - folder: Folder path in Zephyr (e.g. \"/UI/Login\")\n        - priority: Priority (High, Normal, Low)\n        - component: Associated component (e.g. \"Checkout UI\")\n        - step_action: Action steps to perform\n        - step_data: Test input data\n        - step_result: Expected result for the step\n\nReturns:\n    CSV string in official Zephyr bulk import format.",
+                    "name": "format_zephyr_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Jira / Xray CSV structure for bulk import.",
+                    "name": "format_jira_xray_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_543224",
+                        "args": {
+                          "test_cases": [
+                            {
+                              "step_data": "Card: 4532 0158 9123 4567, Exp: 12/28",
+                              "step_action": "1. Enter a valid 16-digit credit card number. 2. Enter a valid future expiration date (e.g., 12/28). 3. Fill CVV/Zip if required. 4. Click 'Place Order / Pay Now'.",
+                              "objective": "Verify user can complete payment using a valid credit card and valid future expiration date.",
+                              "priority": "High",
+                              "precondition": "User is on the Checkout page with items in the cart and total calculated.",
+                              "folder": "/Checkout/Payment",
+                              "name": "Successful Checkout with Valid Credit Card Number and Future Expiration Date",
+                              "component": "Credit Card Payment",
+                              "step_result": "Payment is processed successfully, order confirmation screen is displayed, and order ID is generated."
+                            },
+                            {
+                              "component": "Credit Card Payment",
+                              "precondition": "User is on the Checkout page.",
+                              "priority": "High",
+                              "folder": "/Checkout/Payment",
+                              "step_action": "1. Leave Credit Card Number field blank. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.",
+                              "step_data": "Card: [Empty], Exp: 08/27",
+                              "step_result": "Form submission is blocked; inline validation error \"Credit card number is required\" appears below the card input field.",
+                              "objective": "Verify validation error when Credit Card Number field is left blank.",
+                              "name": "Validation Error for Blank Credit Card Number"
+                            },
+                            {
+                              "component": "Credit Card Payment",
+                              "priority": "High",
+                              "folder": "/Checkout/Payment",
+                              "step_action": "1. Enter valid Credit Card Number. 2. Leave Expiration Date field blank. 3. Click 'Place Order / Pay Now'.",
+                              "objective": "Verify validation error when Expiration Date field is left empty.",
+                              "step_data": "Card: 4532 0158 9123 4567, Exp: [Empty]",
+                              "step_result": "Form submission is blocked; error message \"Expiration date is required\" is displayed under the Expiration Date input field.",
+                              "name": "Validation Error for Blank Expiration Date",
+                              "precondition": "User is on the Checkout page."
+                            },
+                            {
+                              "step_data": "Card: 4532 0158 9123 4567, Exp: 01/22",
+                              "objective": "Verify system rejects credit cards with an expiration date in the past.",
+                              "folder": "/Checkout/Payment",
+                              "step_result": "Form submission is blocked; error message \"Card has expired or invalid expiration date\" is displayed.",
+                              "precondition": "User is on the Checkout page.",
+                              "name": "Validation Error for Past/Expired Date",
+                              "step_action": "1. Enter valid credit card number. 2. Enter an expired date (e.g., 01/22). 3. Click 'Place Order / Pay Now'.",
+                              "component": "Credit Card Payment",
+                              "priority": "High"
+                            },
+                            {
+                              "folder": "/Checkout/Payment",
+                              "step_data": "Card: 4532 0158 9123 4567, Exp: 15/28",
+                              "name": "Validation Error for Invalid Month in Expiration Date",
+                              "objective": "Verify system rejects invalid month entries in Expiration Date field.",
+                              "step_action": "1. Enter valid credit card number. 2. Enter invalid month format '15/28' or '00/28'. 3. Click 'Place Order / Pay Now'.",
+                              "priority": "Medium",
+                              "step_result": "Input is blocked or inline error \"Please enter a valid month (01-12)\" is shown.",
+                              "component": "Credit Card Payment",
+                              "precondition": "User is on the Checkout page."
+                            },
+                            {
+                              "step_data": "Card: 4000 0000 0000 0002, Exp: 11/29",
+                              "objective": "Verify system validates credit card number integrity using Luhn algorithm.",
+                              "step_result": "Inline validation message \"Please enter a valid credit card number\" is displayed.",
+                              "priority": "High",
+                              "precondition": "User is on the Checkout page.",
+                              "folder": "/Checkout/Payment",
+                              "component": "Credit Card Payment",
+                              "name": "Validation Error for Invalid Card Number (Fails Luhn Check)",
+                              "step_action": "1. Enter a 16-digit number that fails Luhn checksum. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'."
+                            },
+                            {
+                              "folder": "/Checkout/Payment",
+                              "priority": "Medium",
+                              "step_action": "1. Enter fewer digits (e.g., 10 digits). 2. Tab out of the field or submit form.",
+                              "objective": "Verify error message when card number contains fewer digits than required.",
+                              "step_data": "Card: 4532 0158 91, Exp: 10/28",
+                              "step_result": "Field displays validation error \"Credit card number must be between 13 and 19 digits\".",
+                              "component": "Credit Card Payment",
+                              "name": "Handling Incomplete / Short Credit Card Number",
+                              "precondition": "User is on the Checkout page."
+                            },
+                            {
+                              "step_action": "1. Type 16 digits into Card Number input without spaces. 2. Type 4 digits into Expiration Date input without slashes.",
+                              "folder": "/Checkout/Payment",
+                              "component": "Credit Card Payment",
+                              "priority": "Medium",
+                              "objective": "Verify card numbers and expiration dates are auto-formatted with spaces/slashes as user types.",
+                              "name": "Auto-Formatting and Input Masking of Credit Card Number and Expiration Date",
+                              "step_data": "Card digits: 4532015891234567, Exp digits: 0828",
+                              "precondition": "User is on the Checkout page.",
+                              "step_result": "Card input displays as '4532 0158 9123 4567' and expiration date displays as '08/28'."
+                            },
+                            {
+                              "name": "Input Masking / Non-Numeric Prevention",
+                              "step_action": "1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.",
+                              "step_data": "Card: abcd@#$%1234, Exp: ab/cd",
+                              "objective": "Verify that alphabetical and special characters are prevented from entry in numeric inputs.",
+                              "folder": "/Checkout/Payment",
+                              "priority": "Medium",
+                              "precondition": "User is on the Checkout page.",
+                              "component": "Credit Card Payment",
+                              "step_result": "Non-numeric input is rejected/ignored; fields only accept numeric input."
+                            },
+                            {
+                              "step_data": "Card: \"4532-0158-9123-4567\", Exp: 05/29",
+                              "objective": "Verify copy-pasting card numbers with hyphens/spaces is cleaned and accepted.",
+                              "step_result": "Input strips dashes, formats cleanly, passes validation, and submits successfully.",
+                              "priority": "Medium",
+                              "name": "Copy-Pasting Formatted Credit Card Number with Spaces/Dashes",
+                              "step_action": "1. Paste \"4532-0158-9123-4567\" into Card Number field. 2. Enter valid expiration date. 3. Submit.",
+                              "component": "Credit Card Payment",
+                              "folder": "/Checkout/Payment",
+                              "precondition": "User is on the Checkout page."
+                            },
+                            {
+                              "folder": "/Checkout/Payment",
+                              "objective": "Verify clicking the submit button multiple times rapidly does not result in duplicate payment processing.",
+                              "name": "Double Submission Prevention on Payment Button Click",
+                              "precondition": "User has filled all valid payment details.",
+                              "step_action": "1. Rapidly click 'Place Order / Pay Now' button twice or more.",
+                              "step_data": "Valid Card & Exp Date",
+                              "step_result": "Submit button is disabled immediately after first click; spinner/loader is shown; single transaction is created.",
+                              "priority": "High",
+                              "component": "Credit Card Payment"
+                            }
+                          ]
+                        },
+                        "name": "format_zephyr_test_cases"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_543224",
+                        "name": "format_zephyr_test_cases",
+                        "response": {
+                          "result": "Name,Objective,Precondition,Folder,Status,Priority,Component,Owner,Estimated Time,Step Action,Step Data,Step Expected Result\r\nSuccessful Checkout with Valid Credit Card Number and Future Expiration Date,Verify user can complete payment using a valid credit card and valid future expiration date.,User is on the Checkout page with items in the cart and total calculated.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter a valid 16-digit credit card number. 2. Enter a valid future expiration date (e.g., 12/28). 3. Fill CVV/Zip if required. 4. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 12/28\",\"Payment is processed successfully, order confirmation screen is displayed, and order ID is generated.\"\r\nValidation Error for Blank Credit Card Number,Verify validation error when Credit Card Number field is left blank.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Leave Credit Card Number field blank. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: [Empty], Exp: 08/27\",\"Form submission is blocked; inline validation error \"\"Credit card number is required\"\" appears below the card input field.\"\r\nValidation Error for Blank Expiration Date,Verify validation error when Expiration Date field is left empty.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter valid Credit Card Number. 2. Leave Expiration Date field blank. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: [Empty]\",\"Form submission is blocked; error message \"\"Expiration date is required\"\" is displayed under the Expiration Date input field.\"\r\nValidation Error for Past/Expired Date,Verify system rejects credit cards with an expiration date in the past.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter valid credit card number. 2. Enter an expired date (e.g., 01/22). 3. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 01/22\",\"Form submission is blocked; error message \"\"Card has expired or invalid expiration date\"\" is displayed.\"\r\nValidation Error for Invalid Month in Expiration Date,Verify system rejects invalid month entries in Expiration Date field.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Enter valid credit card number. 2. Enter invalid month format '15/28' or '00/28'. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: 15/28\",\"Input is blocked or inline error \"\"Please enter a valid month (01-12)\"\" is shown.\"\r\nValidation Error for Invalid Card Number (Fails Luhn Check),Verify system validates credit card number integrity using Luhn algorithm.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter a 16-digit number that fails Luhn checksum. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: 4000 0000 0000 0002, Exp: 11/29\",\"Inline validation message \"\"Please enter a valid credit card number\"\" is displayed.\"\r\nHandling Incomplete / Short Credit Card Number,Verify error message when card number contains fewer digits than required.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Enter fewer digits (e.g., 10 digits). 2. Tab out of the field or submit form.\",\"Card: 4532 0158 91, Exp: 10/28\",\"Field displays validation error \"\"Credit card number must be between 13 and 19 digits\"\".\"\r\nAuto-Formatting and Input Masking of Credit Card Number and Expiration Date,Verify card numbers and expiration dates are auto-formatted with spaces/slashes as user types.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Type 16 digits into Card Number input without spaces. 2. Type 4 digits into Expiration Date input without slashes.,\"Card digits: 4532015891234567, Exp digits: 0828\",Card input displays as '4532 0158 9123 4567' and expiration date displays as '08/28'.\r\nInput Masking / Non-Numeric Prevention,Verify that alphabetical and special characters are prevented from entry in numeric inputs.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.,\"Card: abcd@#$%1234, Exp: ab/cd\",Non-numeric input is rejected/ignored; fields only accept numeric input.\r\nCopy-Pasting Formatted Credit Card Number with Spaces/Dashes,Verify copy-pasting card numbers with hyphens/spaces is cleaned and accepted.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Paste \"\"4532-0158-9123-4567\"\" into Card Number field. 2. Enter valid expiration date. 3. Submit.\",\"Card: \"\"4532-0158-9123-4567\"\", Exp: 05/29\",\"Input strips dashes, formats cleanly, passes validation, and submits successfully.\"\r\nDouble Submission Prevention on Payment Button Click,Verify clicking the submit button multiple times rapidly does not result in duplicate payment processing.,User has filled all valid payment details.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Rapidly click 'Place Order / Pay Now' button twice or more.,Valid Card & Exp Date,Submit button is disabled immediately after first click; spinner/loader is shown; single transaction is created.\r\n"
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "Here is a complete, structured suite of **TestRail-formatted test cases** covering the checkout page's **Credit Card Number** and **Expiration Date** inputs. \n\nIncluded below are:\n1. **Test Coverage Summary & Test Case Matrix**\n2. **Directly Importable TestRail CSV Content**\n3. **Zephyr / Xray CSV Format** (for cross-platform flexibility)\n\n---\n\n### 📋 Test Coverage Summary\n\n| Test ID | Test Title | Type | Priority | Focus Area |\n| :--- | :--- | :--- | :--- | :--- |\n| **TC-001** | Successful Payment with Valid Card & Expiration Date | Functional (Happy Path) | High | Positive Flow |\n| **TC-002** | Validation Error for Blank Credit Card Number | Functional / Validation | High | Required Fields |\n| **TC-003** | Validation Error for Blank Expiration Date | Functional / Validation | High | Required Fields |\n| **TC-004** | Validation Error for Expired Credit Card (Past Date) | Boundary / Validation | High | Date Bounds |\n| **TC-005** | Validation Error for Invalid Month in Expiration Date | Boundary / Validation | Medium | Input Format |\n| **TC-006** | Validation Error for Invalid Card Number (Luhn Check Fail) | Security / Integrity | High | Luhn Algorithm |\n| **TC-007** | Handling Incomplete / Short Credit Card Number | Boundary / Validation | Medium | Length Validation |\n| **TC-008** | Auto-Formatting & Input Masking (Spaces & Slashes) | UI / UX | Medium | Auto-formatting |\n| **TC-009** | Prevention of Non-Numeric Character Input | Input Sanitization | Medium | Field Constraints |\n| **TC-010** | Copy-Pasting Formatted Card Number with Hyphens/Spaces | UX / Functional | Medium | String Cleaning |\n| **TC-011** | Prevention of Duplicate Processing on Rapid Button Clicks | Concurrency / UI | High | Double Submission |\n\n---\n\n### 📥 1. TestRail CSV Import Format\n\nCopy and save the code block below as `testrail_checkout_credit_card_test_cases.csv` to import directly into TestRail via **Suite / Section -> Import Test Cases -> CSV**:\n\n```csv\nSection,Title,Preconds,Steps,Expected Result,Priority,Type\n\"Checkout > Payment\",\"TC-001: Successful Payment with Valid Card & Expiration Date\",\"User is on the Checkout page with items in cart and total calculated.\",\"1. Enter valid 16-digit card number (e.g. 4532 0158 9123 4567).\n2. Enter valid future expiration date (e.g. 12/28).\n3. Click 'Place Order / Pay Now'.\",\"Payment is processed successfully, order confirmation screen is displayed, and unique Order ID is generated.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-002: Validation Error for Blank Credit Card Number\",\"User is on the Checkout page.\",\"1. Leave Credit Card Number field blank.\n2. Enter valid Expiration Date (e.g. 08/27).\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Inline error message 'Credit card number is required' appears below the card field.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-003: Validation Error for Blank Expiration Date\",\"User is on the Checkout page.\",\"1. Enter valid Credit Card Number.\n2. Leave Expiration Date field blank.\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Inline error message 'Expiration date is required' appears under Expiration Date field.\",\"High\",\"Functional\"\n\"Checkout > Payment\",\"TC-004: Validation Error for Expired Credit Card (Past Date)\",\"User is on the Checkout page.\",\"1. Enter valid credit card number.\n2. Enter an expired date (e.g. 01/22).\n3. Click 'Place Order / Pay Now'.\",\"Form submission is blocked. Error message 'Card has expired or invalid expiration date' is displayed.\",\"High\",\"Other\"\n\"Checkout > Payment\",\"TC-005: Validation Error for Invalid Month in Expiration Date\",\"User is on the Checkout page.\",\"1. Enter valid credit card number.\n2. Enter invalid month format '15/28' or '00/28'.\n3. Click 'Place Order / Pay Now'.\",\"Input is rejected or inline error 'Please enter a valid month (01-12)' is displayed.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-006: Validation Error for Invalid Card Number (Luhn Check Fail)\",\"User is on the Checkout page.\",\"1. Enter 16-digit card number that fails Luhn checksum.\n2. Enter valid Expiration Date.\n3. Click 'Place Order / Pay Now'.\",\"Inline validation error 'Please enter a valid credit card number' is displayed.\",\"High\",\"Other\"\n\"Checkout > Payment\",\"TC-007: Handling Incomplete / Short Credit Card Number\",\"User is on the Checkout page.\",\"1. Enter incomplete card number (e.g. 10 digits).\n2. Tab out or click submit.\",\"Validation message 'Credit card number must be between 13 and 19 digits' is displayed.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-008: Auto-Formatting & Input Masking (Spaces & Slashes)\",\"User is on the Checkout page.\",\"1. Type 16 digits into Card field without spaces.\n2. Type 4 digits into Expiration field without slashes.\",\"Card number automatically formats into '4532 0158 9123 4567' and expiration date formats into '08/28'.\",\"Medium\",\"Functional\"\n\"Checkout > Payment\",\"TC-009: Prevention of Non-Numeric Character Input\",\"User is on the Checkout page.\",\"1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.\",\"Non-numeric input is ignored/rejected; fields only accept numeric digits.\",\"Medium\",\"Other\"\n\"Checkout > Payment\",\"TC-010: Copy-Pasting Formatted Card Number with Hyphens/Spaces\",\"User is on the Checkout page.\",\"1. Paste '4532-0158-9123-4567' into Card field.\n2. Enter valid expiration date and submit.\",\"System automatically strips hyphens/spaces, formats cleanly, and processes payment successfully.\",\"Medium\",\"Functional\"\n\"Checkout > Payment\",\"TC-011: Prevention of Duplicate Processing on Rapid Button Clicks\",\"User has entered valid payment details.\",\"1. Rapidly click 'Place Order / Pay Now' button multiple times in quick succession.\",\"Submit button is disabled immediately upon first click; loading indicator is shown; single transaction is created.\",\"High\",\"Functional\"\n```\n\n---\n\n### 📦 2. Zephyr Scale / Squad CSV Format\n\nIf importing into **Zephyr Scale** or **Zephyr Squad**:\n\n```csv\nName,Objective,Precondition,Folder,Status,Priority,Component,Owner,Estimated Time,Step Action,Step Data,Step Expected Result\nSuccessful Checkout with Valid Credit Card Number and Future Expiration Date,Verify user can complete payment using a valid credit card and valid future expiration date.,User is on the Checkout page with items in the cart and total calculated.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter a valid 16-digit credit card number. 2. Enter a valid future expiration date (e.g., 12/28). 3. Fill CVV/Zip if required. 4. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 12/28\",\"Payment is processed successfully, order confirmation screen is displayed, and order ID is generated.\"\nValidation Error for Blank Credit Card Number,Verify validation error when Credit Card Number field is left blank.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Leave Credit Card Number field blank. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: [Empty], Exp: 08/27\",\"Form submission is blocked; inline validation error \"\"Credit card number is required\"\" appears below the card input field.\"\nValidation Error for Blank Expiration Date,Verify validation error when Expiration Date field is left empty.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter valid Credit Card Number. 2. Leave Expiration Date field blank. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: [Empty]\",\"Form submission is blocked; error message \"\"Expiration date is required\"\" is displayed under the Expiration Date input field.\"\nValidation Error for Past/Expired Date,Verify system rejects credit cards with an expiration date in the past.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,\"1. Enter valid credit card number. 2. Enter an expired date (e.g., 01/22). 3. Click 'Place Order / Pay Now'.\",\"Card: 4532 0158 9123 4567, Exp: 01/22\",\"Form submission is blocked; error message \"\"Card has expired or invalid expiration date\"\" is displayed.\"\nValidation Error for Invalid Month in Expiration Date,Verify system rejects invalid month entries in Expiration Date field.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Enter valid credit card number. 2. Enter invalid month format '15/28' or '00/28'. 3. Click 'Place Order / Pay Now'.,\"Card: 4532 0158 9123 4567, Exp: 15/28\",\"Input is blocked or inline error \"\"Please enter a valid month (01-12)\"\" is shown.\"\nValidation Error for Invalid Card Number (Fails Luhn Check),Verify system validates credit card number integrity using Luhn algorithm.,User is on the Checkout page.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Enter a 16-digit number that fails Luhn checksum. 2. Enter valid Expiration Date. 3. Click 'Place Order / Pay Now'.,\"Card: 4000 0000 0000 0002, Exp: 11/29\",\"Inline validation message \"\"Please enter a valid credit card number\"\" is displayed.\"\nHandling Incomplete / Short Credit Card Number,Verify error message when card number contains fewer digits than required.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Enter fewer digits (e.g., 10 digits). 2. Tab out of the field or submit form.\",\"Card: 4532 0158 91, Exp: 10/28\",\"Field displays validation error \"\"Credit card number must be between 13 and 19 digits\"\".\"\nAuto-Formatting and Input Masking of Credit Card Number and Expiration Date,Verify card numbers and expiration dates are auto-formatted with spaces/slashes as user types.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Type 16 digits into Card Number input without spaces. 2. Type 4 digits into Expiration Date input without slashes.,\"Card digits: 4532015891234567, Exp digits: 0828\",Card input displays as '4532 0158 9123 4567' and expiration date displays as '08/28'.\nInput Masking / Non-Numeric Prevention,Verify that alphabetical and special characters are prevented from entry in numeric inputs.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,1. Attempt typing letters or special characters (!@#abc) into Card Number and Expiration Date fields.,\"Card: abcd@#$%1234, Exp: ab/cd\",Non-numeric input is rejected/ignored; fields only accept numeric input.\nCopy-Pasting Formatted Credit Card Number with Spaces/Dashes,Verify copy-pasting card numbers with hyphens/spaces is cleaned and accepted.,User is on the Checkout page.,/Checkout/Payment,Draft,Medium,Credit Card Payment,,,\"1. Paste \"\"4532-0158-9123-4567\"\" into Card Number field. 2. Enter valid expiration date. 3. Submit.\",\"Card: \"\"4532-0158-9123-4567\"\", Exp: 05/29\",\"Input strips dashes, formats cleanly, passes validation, and submits successfully.\"\nDouble Submission Prevention on Payment Button Click,Verify clicking the submit button multiple times rapidly does not result in duplicate payment processing.,User has filled all valid payment details.,/Checkout/Payment,Draft,High,Credit Card Payment,,,1. Rapidly click 'Place Order / Pay Now' button twice or more.,Valid Card & Exp Date,Submit button is disabled immediately after first click; spinner/loader is shown; single transaction is created.\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

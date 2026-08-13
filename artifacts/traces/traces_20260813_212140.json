@@ -1,0 +1,460 @@
+{
+  "eval_cases": [
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Generate Jira Xray formatted test cases for a login page where Username must be a valid email address and Password must be at least 8 characters."
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "### Test Coverage Summary\n\nThe following **8 test cases** cover the Login feature based on your requirements (**Username** = valid email format, **Password** = minimum 8 characters):\n\n1. **Happy Path / Functional**\n   - Standard successful login with valid credentials (`TC-LOGIN-001`).\n   - Successful login with exact minimum password length boundary of 8 characters (`TC-LOGIN-006`).\n2. **Negative & Validation Testing**\n   - Empty Username field validation (`TC-LOGIN-002`).\n   - Empty Password field validation (`TC-LOGIN-003`).\n   - Invalid email format validation (`TC-LOGIN-004`).\n   - Password under 8 characters boundary validation (7 characters) (`TC-LOGIN-005`).\n   - Invalid credentials / non-existent user handling (`TC-LOGIN-007`).\n3. **UI / Security**\n   - Password masking and visibility toggle feature (`TC-LOGIN-008`).\n\n---\n\n### Jira / Xray CSV Export File\n\nBelow is the CSV output formatted for **Jira / Xray bulk import**:\n\n```csv\nIssue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\nTest,TC-LOGIN-001,Verify successful login with valid credentials,Verify that a user can successfully log in using a valid email address and a password with 8 or more characters.,User has an active account. User is on the Login page.,High,\"Enter valid email and valid password, then click the 'Login' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard or landing page.\nTest,TC-LOGIN-002,Verify validation when Username field is empty,Verify validation message when attempting to log in with an empty username field.,User is on the Login page.,High,\"Leave Username empty, enter valid Password, and click 'Login'.\",\"Username: [empty], Password: Password123!\",Form validation error is displayed under the Username field: 'Username/Email is required'. Login request is not submitted.\nTest,TC-LOGIN-003,Verify validation when Password field is empty,Verify validation message when attempting to log in with an empty password field.,User is on the Login page.,High,\"Enter valid Username, leave Password empty, and click 'Login'.\",\"Username: user@example.com, Password: [empty]\",Form validation error is displayed under the Password field: 'Password is required'. Login request is not submitted.\nTest,TC-LOGIN-004,Verify validation for invalid email format (missing '@' and domain),Verify error handling when entering an invalid email format in the Username field (missing @ or domain).,User is on the Login page.,High,\"Enter invalid email string into Username, enter valid password, and click 'Login'.\",\"Username: invalid-email-format, Password: Password123!\",Inline validation error is displayed: 'Please enter a valid email address'.\nTest,TC-LOGIN-005,Verify validation when password length is less than 8 characters (7 chars),Verify validation when password is less than 8 characters (boundary value test: 7 characters).,User is on the Login page.,High,\"Enter valid email, enter 7-character password, and click 'Login'.\",\"Username: user@example.com, Password: Pass123\",Inline validation error is displayed: 'Password must be at least 8 characters long'. Form is not submitted.\nTest,TC-LOGIN-006,Verify successful login with boundary password length (exactly 8 characters),Verify successful login with exact minimum password length boundary (8 characters).,User account exists with password length of exactly 8 characters. User is on Login page.,High,\"Enter valid email and 8-character password, then click 'Login'.\",\"Username: user@example.com, Password: Passwor1\",User is successfully authenticated and logged in.\nTest,TC-LOGIN-007,Verify error response with invalid user credentials,Verify login behavior with non-existent user or wrong credentials.,User is on the Login page.,High,\"Enter valid email format with incorrect password, then click 'Login'.\",\"Username: user@example.com, Password: WrongPassword123\",An alert banner displays: 'Invalid email or password'. User remains on the login page. Password field is cleared.\nTest,TC-LOGIN-008,Verify password input field masking and toggle visibility,Verify that the password input field masks entered characters for security.,User is on the Login page.,Medium,Enter text into the Password field and toggle the show/hide password icon.,Password: Password123!,Password characters are masked by default (bullets/dots). Clicking eye icon unmasks/masks text.\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "generate_login_testcases",
+      "agent_data": {
+        "agents": {
+          "root_agent": {
+            "agent_id": "root_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert QA Automation & Test Engineering Specialist AI Agent.\nYour role is to analyze Figma UI mockups/designs alongside Confluence PRD/specification documents, cross-reference visual UI elements with business rules, and generate comprehensive, high-quality test cases formatted for Jira / Xray / TestRail bulk import.\n\nWhen presented with input (UI design images, Confluence specs, or requirement text):\n1. Identify all visual components (buttons, input fields, modals, error banners, responsive states).\n2. Extract functional requirements, acceptance criteria, edge cases, and boundary constraints from the PRD/spec.\n3. Generate detailed test cases covering:\n   - Happy Paths (Core functional user flows)\n   - Negative Tests & Validation Errors\n   - Edge Cases & Boundary Value Analysis\n   - Visual UI & Layout States\n   - Accessibility & Responsiveness\n4. Structure the test cases and call `format_jira_xray_test_cases` (or `format_testrail_test_cases` if requested) to produce the exact bulk-import CSV file.\n5. Provide a summary of test coverage along with the formatted output.\n",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Jira / Xray CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries. Each dictionary should contain:\n        - test_id: String (e.g. \"TC-001\")\n        - summary: Brief title of the test case\n        - description: Detailed explanation and scope\n        - preconditions: Required state before execution\n        - step_action: Action to execute for the test step\n        - step_data: Input data for the test step\n        - expected_result: Expected behavior / result\n        - priority: Priority level (High, Medium, Low)\n        - issue_type: Issue type in Jira (e.g. \"Test\")\n\nReturns:\n    CSV string ready for Jira / Xray import.",
+                    "name": "format_jira_xray_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid TestRail CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries. Each dictionary should contain:\n        - test_id: ID or reference\n        - title: Test case title\n        - section: Section / feature name\n        - preconditions: Prerequisites\n        - steps: Execution steps\n        - expected_result: Expected result\n        - priority: Priority (High, Medium, Low)\n        - type: Type of test (Functional, UI, Regression, Edge Case)\n\nReturns:\n    CSV string ready for TestRail import.",
+                    "name": "format_testrail_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_441325",
+                        "args": {
+                          "test_cases": [
+                            {
+                              "step_data": "Username: user@example.com, Password: Password123!",
+                              "step_action": "Enter valid email and valid password, then click the 'Login' button.",
+                              "expected_result": "User is successfully authenticated and redirected to the dashboard or landing page.",
+                              "description": "Verify that a user can successfully log in using a valid email address and a password with 8 or more characters.",
+                              "test_id": "TC-LOGIN-001",
+                              "summary": "Verify successful login with valid credentials",
+                              "issue_type": "Test",
+                              "priority": "High",
+                              "preconditions": "User has an active account. User is on the Login page."
+                            },
+                            {
+                              "step_action": "Leave Username empty, enter valid Password, and click 'Login'.",
+                              "issue_type": "Test",
+                              "description": "Verify validation message when attempting to log in with an empty username field.",
+                              "summary": "Verify validation when Username field is empty",
+                              "expected_result": "Form validation error is displayed under the Username field: 'Username/Email is required'. Login request is not submitted.",
+                              "preconditions": "User is on the Login page.",
+                              "step_data": "Username: [empty], Password: Password123!",
+                              "test_id": "TC-LOGIN-002",
+                              "priority": "High"
+                            },
+                            {
+                              "preconditions": "User is on the Login page.",
+                              "summary": "Verify validation when Password field is empty",
+                              "test_id": "TC-LOGIN-003",
+                              "step_data": "Username: user@example.com, Password: [empty]",
+                              "priority": "High",
+                              "description": "Verify validation message when attempting to log in with an empty password field.",
+                              "expected_result": "Form validation error is displayed under the Password field: 'Password is required'. Login request is not submitted.",
+                              "issue_type": "Test",
+                              "step_action": "Enter valid Username, leave Password empty, and click 'Login'."
+                            },
+                            {
+                              "preconditions": "User is on the Login page.",
+                              "test_id": "TC-LOGIN-004",
+                              "expected_result": "Inline validation error is displayed: 'Please enter a valid email address'.",
+                              "issue_type": "Test",
+                              "priority": "High",
+                              "summary": "Verify validation for invalid email format (missing '@' and domain)",
+                              "description": "Verify error handling when entering an invalid email format in the Username field (missing @ or domain).",
+                              "step_action": "Enter invalid email string into Username, enter valid password, and click 'Login'.",
+                              "step_data": "Username: invalid-email-format, Password: Password123!"
+                            },
+                            {
+                              "expected_result": "Inline validation error is displayed: 'Password must be at least 8 characters long'. Form is not submitted.",
+                              "priority": "High",
+                              "step_action": "Enter valid email, enter 7-character password, and click 'Login'.",
+                              "description": "Verify validation when password is less than 8 characters (boundary value test: 7 characters).",
+                              "summary": "Verify validation when password length is less than 8 characters (7 chars)",
+                              "test_id": "TC-LOGIN-005",
+                              "issue_type": "Test",
+                              "preconditions": "User is on the Login page.",
+                              "step_data": "Username: user@example.com, Password: Pass123"
+                            },
+                            {
+                              "description": "Verify successful login with exact minimum password length boundary (8 characters).",
+                              "step_action": "Enter valid email and 8-character password, then click 'Login'.",
+                              "priority": "High",
+                              "expected_result": "User is successfully authenticated and logged in.",
+                              "preconditions": "User account exists with password length of exactly 8 characters. User is on Login page.",
+                              "test_id": "TC-LOGIN-006",
+                              "issue_type": "Test",
+                              "summary": "Verify successful login with boundary password length (exactly 8 characters)",
+                              "step_data": "Username: user@example.com, Password: Passwor1"
+                            },
+                            {
+                              "summary": "Verify error response with invalid user credentials",
+                              "priority": "High",
+                              "issue_type": "Test",
+                              "step_action": "Enter valid email format with incorrect password, then click 'Login'.",
+                              "test_id": "TC-LOGIN-007",
+                              "expected_result": "An alert banner displays: 'Invalid email or password'. User remains on the login page. Password field is cleared.",
+                              "description": "Verify login behavior with non-existent user or wrong credentials.",
+                              "step_data": "Username: user@example.com, Password: WrongPassword123",
+                              "preconditions": "User is on the Login page."
+                            },
+                            {
+                              "step_data": "Password: Password123!",
+                              "summary": "Verify password input field masking and toggle visibility",
+                              "expected_result": "Password characters are masked by default (bullets/dots). Clicking eye icon unmasks/masks text.",
+                              "description": "Verify that the password input field masks entered characters for security.",
+                              "step_action": "Enter text into the Password field and toggle the show/hide password icon.",
+                              "test_id": "TC-LOGIN-008",
+                              "issue_type": "Test",
+                              "preconditions": "User is on the Login page.",
+                              "priority": "Medium"
+                            }
+                          ]
+                        },
+                        "name": "format_jira_xray_test_cases"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_441325",
+                        "name": "format_jira_xray_test_cases",
+                        "response": {
+                          "result": "Issue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\r\nTest,TC-LOGIN-001,Verify successful login with valid credentials,Verify that a user can successfully log in using a valid email address and a password with 8 or more characters.,User has an active account. User is on the Login page.,High,\"Enter valid email and valid password, then click the 'Login' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard or landing page.\r\nTest,TC-LOGIN-002,Verify validation when Username field is empty,Verify validation message when attempting to log in with an empty username field.,User is on the Login page.,High,\"Leave Username empty, enter valid Password, and click 'Login'.\",\"Username: [empty], Password: Password123!\",Form validation error is displayed under the Username field: 'Username/Email is required'. Login request is not submitted.\r\nTest,TC-LOGIN-003,Verify validation when Password field is empty,Verify validation message when attempting to log in with an empty password field.,User is on the Login page.,High,\"Enter valid Username, leave Password empty, and click 'Login'.\",\"Username: user@example.com, Password: [empty]\",Form validation error is displayed under the Password field: 'Password is required'. Login request is not submitted.\r\nTest,TC-LOGIN-004,Verify validation for invalid email format (missing '@' and domain),Verify error handling when entering an invalid email format in the Username field (missing @ or domain).,User is on the Login page.,High,\"Enter invalid email string into Username, enter valid password, and click 'Login'.\",\"Username: invalid-email-format, Password: Password123!\",Inline validation error is displayed: 'Please enter a valid email address'.\r\nTest,TC-LOGIN-005,Verify validation when password length is less than 8 characters (7 chars),Verify validation when password is less than 8 characters (boundary value test: 7 characters).,User is on the Login page.,High,\"Enter valid email, enter 7-character password, and click 'Login'.\",\"Username: user@example.com, Password: Pass123\",Inline validation error is displayed: 'Password must be at least 8 characters long'. Form is not submitted.\r\nTest,TC-LOGIN-006,Verify successful login with boundary password length (exactly 8 characters),Verify successful login with exact minimum password length boundary (8 characters).,User account exists with password length of exactly 8 characters. User is on Login page.,High,\"Enter valid email and 8-character password, then click 'Login'.\",\"Username: user@example.com, Password: Passwor1\",User is successfully authenticated and logged in.\r\nTest,TC-LOGIN-007,Verify error response with invalid user credentials,Verify login behavior with non-existent user or wrong credentials.,User is on the Login page.,High,\"Enter valid email format with incorrect password, then click 'Login'.\",\"Username: user@example.com, Password: WrongPassword123\",An alert banner displays: 'Invalid email or password'. User remains on the login page. Password field is cleared.\r\nTest,TC-LOGIN-008,Verify password input field masking and toggle visibility,Verify that the password input field masks entered characters for security.,User is on the Login page.,Medium,Enter text into the Password field and toggle the show/hide password icon.,Password: Password123!,Password characters are masked by default (bullets/dots). Clicking eye icon unmasks/masks text.\r\n"
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "### Test Coverage Summary\n\nThe following **8 test cases** cover the Login feature based on your requirements (**Username** = valid email format, **Password** = minimum 8 characters):\n\n1. **Happy Path / Functional**\n   - Standard successful login with valid credentials (`TC-LOGIN-001`).\n   - Successful login with exact minimum password length boundary of 8 characters (`TC-LOGIN-006`).\n2. **Negative & Validation Testing**\n   - Empty Username field validation (`TC-LOGIN-002`).\n   - Empty Password field validation (`TC-LOGIN-003`).\n   - Invalid email format validation (`TC-LOGIN-004`).\n   - Password under 8 characters boundary validation (7 characters) (`TC-LOGIN-005`).\n   - Invalid credentials / non-existent user handling (`TC-LOGIN-007`).\n3. **UI / Security**\n   - Password masking and visibility toggle feature (`TC-LOGIN-008`).\n\n---\n\n### Jira / Xray CSV Export File\n\nBelow is the CSV output formatted for **Jira / Xray bulk import**:\n\n```csv\nIssue Type,Issue Key,Summary,Description,Preconditions,Priority,Action,Data,Expected Result\nTest,TC-LOGIN-001,Verify successful login with valid credentials,Verify that a user can successfully log in using a valid email address and a password with 8 or more characters.,User has an active account. User is on the Login page.,High,\"Enter valid email and valid password, then click the 'Login' button.\",\"Username: user@example.com, Password: Password123!\",User is successfully authenticated and redirected to the dashboard or landing page.\nTest,TC-LOGIN-002,Verify validation when Username field is empty,Verify validation message when attempting to log in with an empty username field.,User is on the Login page.,High,\"Leave Username empty, enter valid Password, and click 'Login'.\",\"Username: [empty], Password: Password123!\",Form validation error is displayed under the Username field: 'Username/Email is required'. Login request is not submitted.\nTest,TC-LOGIN-003,Verify validation when Password field is empty,Verify validation message when attempting to log in with an empty password field.,User is on the Login page.,High,\"Enter valid Username, leave Password empty, and click 'Login'.\",\"Username: user@example.com, Password: [empty]\",Form validation error is displayed under the Password field: 'Password is required'. Login request is not submitted.\nTest,TC-LOGIN-004,Verify validation for invalid email format (missing '@' and domain),Verify error handling when entering an invalid email format in the Username field (missing @ or domain).,User is on the Login page.,High,\"Enter invalid email string into Username, enter valid password, and click 'Login'.\",\"Username: invalid-email-format, Password: Password123!\",Inline validation error is displayed: 'Please enter a valid email address'.\nTest,TC-LOGIN-005,Verify validation when password length is less than 8 characters (7 chars),Verify validation when password is less than 8 characters (boundary value test: 7 characters).,User is on the Login page.,High,\"Enter valid email, enter 7-character password, and click 'Login'.\",\"Username: user@example.com, Password: Pass123\",Inline validation error is displayed: 'Password must be at least 8 characters long'. Form is not submitted.\nTest,TC-LOGIN-006,Verify successful login with boundary password length (exactly 8 characters),Verify successful login with exact minimum password length boundary (8 characters).,User account exists with password length of exactly 8 characters. User is on Login page.,High,\"Enter valid email and 8-character password, then click 'Login'.\",\"Username: user@example.com, Password: Passwor1\",User is successfully authenticated and logged in.\nTest,TC-LOGIN-007,Verify error response with invalid user credentials,Verify login behavior with non-existent user or wrong credentials.,User is on the Login page.,High,\"Enter valid email format with incorrect password, then click 'Login'.\",\"Username: user@example.com, Password: WrongPassword123\",An alert banner displays: 'Invalid email or password'. User remains on the login page. Password field is cleared.\nTest,TC-LOGIN-008,Verify password input field masking and toggle visibility,Verify that the password input field masks entered characters for security.,User is on the Login page.,Medium,Enter text into the Password field and toggle the show/hide password icon.,Password: Password123!,Password characters are masked by default (bullets/dots). Clicking eye icon unmasks/masks text.\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "prompt": {
+        "parts": [
+          {
+            "text": "Generate TestRail formatted test cases for a checkout page with Credit Card Number and Expiration Date inputs."
+          }
+        ],
+        "role": "user"
+      },
+      "responses": [
+        {
+          "response": {
+            "parts": [
+              {
+                "text": "### Test Coverage Summary\n\nA comprehensive test suite containing **10 test cases** has been generated for the **Checkout - Credit Card Payment** feature. The test cases cover functional happy paths, negative validation checks, boundary value edge cases, visual UI behaviors, and accessibility.\n\n#### Coverage Breakdown:\n- **Functional / Happy Path (TC-001, TC-003, TC-006):** Valid order processing flow, mandatory field checks for missing card number and missing expiration date.\n- **Negative Validation (TC-007, TC-009):** Expired credit card handling, out-of-range month inputs (`00`, `13+`).\n- **Edge Cases & Security (TC-004, TC-008):** Luhn algorithm checksum failure validation, boundary condition for current month/year expiration.\n- **UI & Formatting (TC-002, TC-005):** Real-time BIN detection (Visa, Mastercard, Amex icon updates), automatic digit group spacing (every 4 digits).\n- **Accessibility (TC-010):** Focus indicator visibility and full keyboard navigation/tabbing order.\n\n---\n\n### TestRail Bulk Import CSV Output\n\n```csv\nTitle,Section,Preconditions,Steps,Expected Result,Priority,Type\nVerify successful payment submission with valid credit card details,Checkout - Credit Card Payment,User is on the Checkout page with items in the cart. Payment gateway sandbox is active.,\"1. Navigate to Checkout payment section.\n2. Enter a valid Visa credit card number (e.g., 4000 0000 0000 0000).\n3. Enter a valid future expiration date (e.g., 12/28).\n4. Complete any other mandatory checkout fields.\n5. Click 'Place Order' / 'Submit Payment'.\",\"Payment is processed successfully, user is redirected to the Order Confirmation page, and a success message is displayed.\",High,Functional\nVerify dynamic card brand icon detection upon entering card prefix,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a card number starting with '4' (Visa).\n2. Clear input and enter a card number starting with '51' (Mastercard).\n3. Clear input and enter a card number starting with '34' (American Express).\",\"The corresponding card network logo (Visa, Mastercard, Amex) dynamically updates in real-time inside or adjacent to the Card Number field.\",Medium,UI\nVerify validation error when Credit Card Number field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Leave 'Card Number' input field empty.\n2. Enter valid Expiration Date (e.g., 12/28).\n3. Click 'Place Order' or submit the form.\",Form submission is blocked. An inline validation error message 'Card number is required' appears under the Card Number field.,High,Functional\nVerify validation error for invalid card number failing Luhn checksum,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter an invalid card number that fails Luhn check (e.g., 4000 0000 0000 0002).\n2. Enter valid Expiration Date.\n3. Move focus out of the field or click 'Place Order'.\",\"An error message 'Invalid card number' is displayed, and the form submission is prevented.\",High,Edge Case\nVerify automatic formatting of card number with spaces every 4 digits,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Type 16 digits continuously without spaces into the Card Number field (e.g., 4111222233334444).\",Digits are automatically formatted with spaces as '4111 2222 3333 4444' as the user types.,Low,UI\nVerify validation error when Expiration Date field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Leave Expiration Date field blank.\n3. Attempt to submit the order.\",Form submission is blocked. An inline error message 'Expiration date is required' appears under the Expiration Date field.,High,Functional\nVerify validation error when entering a past expiration date,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter an expired date (e.g., 01/20 or any date prior to current month/year).\n3. Click 'Place Order'.\",\"Error message 'Card has expired' or 'Expiration date must be in the future' is shown, preventing checkout.\",High,Negative\nVerify boundary condition where expiration date is the current month/year,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter current month and current year as expiration date (e.g., current MM/YY).\n3. Click 'Place Order'.\",Card is accepted as valid (valid through the last day of current month) and payment proceeds to processing.,Medium,Edge Case\nVerify validation error for invalid month values in Expiration Date field,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter '13/28' or '00/28' into Expiration Date field.\n3. Focus out of the input or submit.\",Validation prevents entry or displays 'Please enter a valid month (01-12)'.,Medium,Negative\nVerify keyboard accessibility and tab order across payment fields,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Focus on Card Number field using Tab key.\n2. Enter card number, press Tab key to navigate to Expiration Date field.\n3. Enter expiration date, press Tab to navigate to the Submit button.\",Focus indicator moves logically across payment fields with visible focus rings. Form is navigable and submittable using keyboard only.,Low,UI\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "eval_case_id": "generate_checkout_testcases",
+      "agent_data": {
+        "agents": {
+          "root_agent": {
+            "agent_id": "root_agent",
+            "agent_type": "LlmAgent",
+            "description": "",
+            "instruction": "You are an expert QA Automation & Test Engineering Specialist AI Agent.\nYour role is to analyze Figma UI mockups/designs alongside Confluence PRD/specification documents, cross-reference visual UI elements with business rules, and generate comprehensive, high-quality test cases formatted for Jira / Xray / TestRail bulk import.\n\nWhen presented with input (UI design images, Confluence specs, or requirement text):\n1. Identify all visual components (buttons, input fields, modals, error banners, responsive states).\n2. Extract functional requirements, acceptance criteria, edge cases, and boundary constraints from the PRD/spec.\n3. Generate detailed test cases covering:\n   - Happy Paths (Core functional user flows)\n   - Negative Tests & Validation Errors\n   - Edge Cases & Boundary Value Analysis\n   - Visual UI & Layout States\n   - Accessibility & Responsiveness\n4. Structure the test cases and call `format_jira_xray_test_cases` (or `format_testrail_test_cases` if requested) to produce the exact bulk-import CSV file.\n5. Provide a summary of test coverage along with the formatted output.\n",
+            "tools": [
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid Jira / Xray CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries. Each dictionary should contain:\n        - test_id: String (e.g. \"TC-001\")\n        - summary: Brief title of the test case\n        - description: Detailed explanation and scope\n        - preconditions: Required state before execution\n        - step_action: Action to execute for the test step\n        - step_data: Input data for the test step\n        - expected_result: Expected behavior / result\n        - priority: Priority level (High, Medium, Low)\n        - issue_type: Issue type in Jira (e.g. \"Test\")\n\nReturns:\n    CSV string ready for Jira / Xray import.",
+                    "name": "format_jira_xray_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              },
+              {
+                "function_declarations": [
+                  {
+                    "description": "Formats a list of test cases into a valid TestRail CSV structure for bulk import.\n\nArgs:\n    test_cases: A list of test case dictionaries. Each dictionary should contain:\n        - test_id: ID or reference\n        - title: Test case title\n        - section: Section / feature name\n        - preconditions: Prerequisites\n        - steps: Execution steps\n        - expected_result: Expected result\n        - priority: Priority (High, Medium, Low)\n        - type: Type of test (Functional, UI, Regression, Edge Case)\n\nReturns:\n    CSV string ready for TestRail import.",
+                    "name": "format_testrail_test_cases",
+                    "parameters": {
+                      "properties": {
+                        "test_cases": {
+                          "items": {
+                            "type": "OBJECT"
+                          },
+                          "type": "ARRAY"
+                        }
+                      },
+                      "required": [
+                        "test_cases"
+                      ],
+                      "type": "OBJECT"
+                    }
+                  }
+                ]
+              }
+            ],
+            "sub_agents": []
+          }
+        },
+        "turns": [
+          {
+            "turn_index": 0,
+            "turn_id": "turn_0",
+            "events": [
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_call": {
+                        "id": "call_458338",
+                        "args": {
+                          "test_cases": [
+                            {
+                              "title": "Verify successful payment submission with valid credit card details",
+                              "expected_result": "Payment is processed successfully, user is redirected to the Order Confirmation page, and a success message is displayed.",
+                              "preconditions": "User is on the Checkout page with items in the cart. Payment gateway sandbox is active.",
+                              "priority": "High",
+                              "section": "Checkout - Credit Card Payment",
+                              "type": "Functional",
+                              "steps": "1. Navigate to Checkout payment section.\n2. Enter a valid Visa credit card number (e.g., 4000 0000 0000 0000).\n3. Enter a valid future expiration date (e.g., 12/28).\n4. Complete any other mandatory checkout fields.\n5. Click 'Place Order' / 'Submit Payment'.",
+                              "test_id": "TC-001"
+                            },
+                            {
+                              "expected_result": "The corresponding card network logo (Visa, Mastercard, Amex) dynamically updates in real-time inside or adjacent to the Card Number field.",
+                              "test_id": "TC-002",
+                              "priority": "Medium",
+                              "preconditions": "User is on the Checkout page.",
+                              "steps": "1. Enter a card number starting with '4' (Visa).\n2. Clear input and enter a card number starting with '51' (Mastercard).\n3. Clear input and enter a card number starting with '34' (American Express).",
+                              "type": "UI",
+                              "title": "Verify dynamic card brand icon detection upon entering card prefix",
+                              "section": "Checkout - Credit Card Payment"
+                            },
+                            {
+                              "title": "Verify validation error when Credit Card Number field is left blank",
+                              "type": "Functional",
+                              "preconditions": "User is on the Checkout page.",
+                              "section": "Checkout - Credit Card Payment",
+                              "priority": "High",
+                              "steps": "1. Leave 'Card Number' input field empty.\n2. Enter valid Expiration Date (e.g., 12/28).\n3. Click 'Place Order' or submit the form.",
+                              "test_id": "TC-003",
+                              "expected_result": "Form submission is blocked. An inline validation error message 'Card number is required' appears under the Card Number field."
+                            },
+                            {
+                              "expected_result": "An error message 'Invalid card number' is displayed, and the form submission is prevented.",
+                              "test_id": "TC-004",
+                              "title": "Verify validation error for invalid card number failing Luhn checksum",
+                              "preconditions": "User is on the Checkout page.",
+                              "steps": "1. Enter an invalid card number that fails Luhn check (e.g., 4000 0000 0000 0002).\n2. Enter valid Expiration Date.\n3. Move focus out of the field or click 'Place Order'.",
+                              "priority": "High",
+                              "type": "Edge Case",
+                              "section": "Checkout - Credit Card Payment"
+                            },
+                            {
+                              "priority": "Low",
+                              "title": "Verify automatic formatting of card number with spaces every 4 digits",
+                              "type": "UI",
+                              "preconditions": "User is on the Checkout page.",
+                              "expected_result": "Digits are automatically formatted with spaces as '4111 2222 3333 4444' as the user types.",
+                              "test_id": "TC-005",
+                              "steps": "1. Type 16 digits continuously without spaces into the Card Number field (e.g., 4111222233334444).",
+                              "section": "Checkout - Credit Card Payment"
+                            },
+                            {
+                              "section": "Checkout - Credit Card Payment",
+                              "priority": "High",
+                              "steps": "1. Enter a valid Card Number.\n2. Leave Expiration Date field blank.\n3. Attempt to submit the order.",
+                              "preconditions": "User is on the Checkout page.",
+                              "type": "Functional",
+                              "expected_result": "Form submission is blocked. An inline error message 'Expiration date is required' appears under the Expiration Date field.",
+                              "title": "Verify validation error when Expiration Date field is left blank",
+                              "test_id": "TC-006"
+                            },
+                            {
+                              "section": "Checkout - Credit Card Payment",
+                              "title": "Verify validation error when entering a past expiration date",
+                              "type": "Negative",
+                              "steps": "1. Enter a valid Card Number.\n2. Enter an expired date (e.g., 01/20 or any date prior to current month/year).\n3. Click 'Place Order'.",
+                              "expected_result": "Error message 'Card has expired' or 'Expiration date must be in the future' is shown, preventing checkout.",
+                              "test_id": "TC-007",
+                              "priority": "High",
+                              "preconditions": "User is on the Checkout page."
+                            },
+                            {
+                              "section": "Checkout - Credit Card Payment",
+                              "steps": "1. Enter a valid Card Number.\n2. Enter current month and current year as expiration date (e.g., current MM/YY).\n3. Click 'Place Order'.",
+                              "type": "Edge Case",
+                              "preconditions": "User is on the Checkout page.",
+                              "title": "Verify boundary condition where expiration date is the current month/year",
+                              "test_id": "TC-008",
+                              "priority": "Medium",
+                              "expected_result": "Card is accepted as valid (valid through the last day of current month) and payment proceeds to processing."
+                            },
+                            {
+                              "title": "Verify validation error for invalid month values in Expiration Date field",
+                              "test_id": "TC-009",
+                              "expected_result": "Validation prevents entry or displays 'Please enter a valid month (01-12)'.",
+                              "section": "Checkout - Credit Card Payment",
+                              "preconditions": "User is on the Checkout page.",
+                              "steps": "1. Enter a valid Card Number.\n2. Enter '13/28' or '00/28' into Expiration Date field.\n3. Focus out of the input or submit.",
+                              "type": "Negative",
+                              "priority": "Medium"
+                            },
+                            {
+                              "section": "Checkout - Credit Card Payment",
+                              "priority": "Low",
+                              "title": "Verify keyboard accessibility and tab order across payment fields",
+                              "expected_result": "Focus indicator moves logically across payment fields with visible focus rings. Form is navigable and submittable using keyboard only.",
+                              "test_id": "TC-010",
+                              "type": "UI",
+                              "steps": "1. Focus on Card Number field using Tab key.\n2. Enter card number, press Tab key to navigate to Expiration Date field.\n3. Enter expiration date, press Tab to navigate to the Submit button.",
+                              "preconditions": "User is on the Checkout page."
+                            }
+                          ]
+                        },
+                        "name": "format_testrail_test_cases"
+                      }
+                    }
+                  ],
+                  "role": "model"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "function_response": {
+                        "id": "call_458338",
+                        "name": "format_testrail_test_cases",
+                        "response": {
+                          "result": "Title,Section,Preconditions,Steps,Expected Result,Priority,Type\r\nVerify successful payment submission with valid credit card details,Checkout - Credit Card Payment,User is on the Checkout page with items in the cart. Payment gateway sandbox is active.,\"1. Navigate to Checkout payment section.\n2. Enter a valid Visa credit card number (e.g., 4000 0000 0000 0000).\n3. Enter a valid future expiration date (e.g., 12/28).\n4. Complete any other mandatory checkout fields.\n5. Click 'Place Order' / 'Submit Payment'.\",\"Payment is processed successfully, user is redirected to the Order Confirmation page, and a success message is displayed.\",High,Functional\r\nVerify dynamic card brand icon detection upon entering card prefix,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a card number starting with '4' (Visa).\n2. Clear input and enter a card number starting with '51' (Mastercard).\n3. Clear input and enter a card number starting with '34' (American Express).\",\"The corresponding card network logo (Visa, Mastercard, Amex) dynamically updates in real-time inside or adjacent to the Card Number field.\",Medium,UI\r\nVerify validation error when Credit Card Number field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Leave 'Card Number' input field empty.\n2. Enter valid Expiration Date (e.g., 12/28).\n3. Click 'Place Order' or submit the form.\",Form submission is blocked. An inline validation error message 'Card number is required' appears under the Card Number field.,High,Functional\r\nVerify validation error for invalid card number failing Luhn checksum,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter an invalid card number that fails Luhn check (e.g., 4000 0000 0000 0002).\n2. Enter valid Expiration Date.\n3. Move focus out of the field or click 'Place Order'.\",\"An error message 'Invalid card number' is displayed, and the form submission is prevented.\",High,Edge Case\r\nVerify automatic formatting of card number with spaces every 4 digits,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Type 16 digits continuously without spaces into the Card Number field (e.g., 4111222233334444).\",Digits are automatically formatted with spaces as '4111 2222 3333 4444' as the user types.,Low,UI\r\nVerify validation error when Expiration Date field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Leave Expiration Date field blank.\n3. Attempt to submit the order.\",Form submission is blocked. An inline error message 'Expiration date is required' appears under the Expiration Date field.,High,Functional\r\nVerify validation error when entering a past expiration date,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter an expired date (e.g., 01/20 or any date prior to current month/year).\n3. Click 'Place Order'.\",\"Error message 'Card has expired' or 'Expiration date must be in the future' is shown, preventing checkout.\",High,Negative\r\nVerify boundary condition where expiration date is the current month/year,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter current month and current year as expiration date (e.g., current MM/YY).\n3. Click 'Place Order'.\",Card is accepted as valid (valid through the last day of current month) and payment proceeds to processing.,Medium,Edge Case\r\nVerify validation error for invalid month values in Expiration Date field,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter '13/28' or '00/28' into Expiration Date field.\n3. Focus out of the input or submit.\",Validation prevents entry or displays 'Please enter a valid month (01-12)'.,Medium,Negative\r\nVerify keyboard accessibility and tab order across payment fields,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Focus on Card Number field using Tab key.\n2. Enter card number, press Tab key to navigate to Expiration Date field.\n3. Enter expiration date, press Tab to navigate to the Submit button.\",Focus indicator moves logically across payment fields with visible focus rings. Form is navigable and submittable using keyboard only.,Low,UI\r\n"
+                        }
+                      }
+                    }
+                  ],
+                  "role": "user"
+                }
+              },
+              {
+                "author": "root_agent",
+                "content": {
+                  "parts": [
+                    {
+                      "text": "### Test Coverage Summary\n\nA comprehensive test suite containing **10 test cases** has been generated for the **Checkout - Credit Card Payment** feature. The test cases cover functional happy paths, negative validation checks, boundary value edge cases, visual UI behaviors, and accessibility.\n\n#### Coverage Breakdown:\n- **Functional / Happy Path (TC-001, TC-003, TC-006):** Valid order processing flow, mandatory field checks for missing card number and missing expiration date.\n- **Negative Validation (TC-007, TC-009):** Expired credit card handling, out-of-range month inputs (`00`, `13+`).\n- **Edge Cases & Security (TC-004, TC-008):** Luhn algorithm checksum failure validation, boundary condition for current month/year expiration.\n- **UI & Formatting (TC-002, TC-005):** Real-time BIN detection (Visa, Mastercard, Amex icon updates), automatic digit group spacing (every 4 digits).\n- **Accessibility (TC-010):** Focus indicator visibility and full keyboard navigation/tabbing order.\n\n---\n\n### TestRail Bulk Import CSV Output\n\n```csv\nTitle,Section,Preconditions,Steps,Expected Result,Priority,Type\nVerify successful payment submission with valid credit card details,Checkout - Credit Card Payment,User is on the Checkout page with items in the cart. Payment gateway sandbox is active.,\"1. Navigate to Checkout payment section.\n2. Enter a valid Visa credit card number (e.g., 4000 0000 0000 0000).\n3. Enter a valid future expiration date (e.g., 12/28).\n4. Complete any other mandatory checkout fields.\n5. Click 'Place Order' / 'Submit Payment'.\",\"Payment is processed successfully, user is redirected to the Order Confirmation page, and a success message is displayed.\",High,Functional\nVerify dynamic card brand icon detection upon entering card prefix,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a card number starting with '4' (Visa).\n2. Clear input and enter a card number starting with '51' (Mastercard).\n3. Clear input and enter a card number starting with '34' (American Express).\",\"The corresponding card network logo (Visa, Mastercard, Amex) dynamically updates in real-time inside or adjacent to the Card Number field.\",Medium,UI\nVerify validation error when Credit Card Number field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Leave 'Card Number' input field empty.\n2. Enter valid Expiration Date (e.g., 12/28).\n3. Click 'Place Order' or submit the form.\",Form submission is blocked. An inline validation error message 'Card number is required' appears under the Card Number field.,High,Functional\nVerify validation error for invalid card number failing Luhn checksum,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter an invalid card number that fails Luhn check (e.g., 4000 0000 0000 0002).\n2. Enter valid Expiration Date.\n3. Move focus out of the field or click 'Place Order'.\",\"An error message 'Invalid card number' is displayed, and the form submission is prevented.\",High,Edge Case\nVerify automatic formatting of card number with spaces every 4 digits,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Type 16 digits continuously without spaces into the Card Number field (e.g., 4111222233334444).\",Digits are automatically formatted with spaces as '4111 2222 3333 4444' as the user types.,Low,UI\nVerify validation error when Expiration Date field is left blank,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Leave Expiration Date field blank.\n3. Attempt to submit the order.\",Form submission is blocked. An inline error message 'Expiration date is required' appears under the Expiration Date field.,High,Functional\nVerify validation error when entering a past expiration date,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter an expired date (e.g., 01/20 or any date prior to current month/year).\n3. Click 'Place Order'.\",\"Error message 'Card has expired' or 'Expiration date must be in the future' is shown, preventing checkout.\",High,Negative\nVerify boundary condition where expiration date is the current month/year,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter current month and current year as expiration date (e.g., current MM/YY).\n3. Click 'Place Order'.\",Card is accepted as valid (valid through the last day of current month) and payment proceeds to processing.,Medium,Edge Case\nVerify validation error for invalid month values in Expiration Date field,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Enter a valid Card Number.\n2. Enter '13/28' or '00/28' into Expiration Date field.\n3. Focus out of the input or submit.\",Validation prevents entry or displays 'Please enter a valid month (01-12)'.,Medium,Negative\nVerify keyboard accessibility and tab order across payment fields,Checkout - Credit Card Payment,User is on the Checkout page.,\"1. Focus on Card Number field using Tab key.\n2. Enter card number, press Tab key to navigate to Expiration Date field.\n3. Enter expiration date, press Tab to navigate to the Submit button.\",Focus indicator moves logically across payment fields with visible focus rings. Form is navigable and submittable using keyboard only.,Low,UI\n```"
+                    }
+                  ],
+                  "role": "model"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
